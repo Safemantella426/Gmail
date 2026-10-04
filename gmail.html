@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Duyệt Gmail & Đổi Thưởng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* --- MÀN HÌNH AUTH --- */
+        .auth-card {
+            background: var(--bg-card);
+            padding: 28px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .auth-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .auth-card p.subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- DASHBOARD --- */
+        .dashboard-card {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        nav {
+            background-color: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .menu {
+            display: flex;
+            gap: 6px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .menu-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            color: var(--text-main);
+            background-color: var(--bg-input);
+        }
+
+        .menu-btn.active {
+            color: #ffffff;
+            background-color: var(--primary);
+        }
+
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 4px 8px 4px 4px;
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 2px;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--accent-red);
+            color: #ffffff;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wallet-label {
+            font-size: 12px;
+            color: #93c5fd;
+            margin-bottom: 4px;
+        }
+
+        .wallet-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .rules-card {
+            background-color: rgba(59, 130, 246, 0.08);
+            border-left: 3px solid var(--primary);
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .rules-card h4 {
+            color: var(--primary);
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .rules-card ul {
+            padding-left: 16px;
+            color: var(--text-muted);
+        }
+
+        .pass-copy-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--bg-input);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            margin: 4px 0;
+        }
+
+        .pass-copy-box code {
+            color: #f1f5f9;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .btn-copy {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-copy:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .invoice-box {
+            background-color: #0f172a;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .invoice-row.total {
+            border-top: 1px solid var(--border);
+            padding-top: 6px;
+            margin-bottom: 0;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background-color: #0f172a;
+        }
+
+        tbody tr.clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        tbody tr.clickable-row:hover {
+            background-color: rgba(51, 65, 85, 0.6);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge.pending { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); }
+        .badge.approved { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .badge.rejected { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        .method-fields {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+            margin-bottom: 14px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 13px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .modal-body .info-row {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .modal-body .info-label {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .modal-body .info-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .box-success-content {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-green);
+            padding: 10px;
+            border-radius: 6px;
+            color: var(--accent-green);
+            margin-top: 10px;
+        }
+
+        .box-failed-content {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            padding: 10px;
+            border-radius: 6px;
+            color: var(--accent-red);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 1. MÀN HÌNH AUTH -->
+        <div class="auth-card" id="authScreen">
+            <!-- FORM ĐĂNG NHẬP -->
+            <div id="loginBlock">
+                <h2>Đăng Nhập</h2>
+                <p class="subtitle">Hệ thống quản lý & duyệt Gmail</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginGmail">Gmail</label>
+                        <input type="email" id="loginGmail" placeholder="email@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mật khẩu (Tối thiểu 8 ký tự)</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" minlength="8" required>
+                    </div>
+                    <button type="submit" class="btn" id="btnLogin">Đăng Nhập</button>
+                </form>
+                <div class="auth-switch">
+                    Chưa có tài khoản? <a onclick="toggleAuthMode('signup')">Đăng ký ngay</a>
+                </div>
+            </div>
+
+            <!-- FORM ĐĂNG KÝ -->
+            <div id="signupBlock" style="display: none;">
+                <h2>Đăng Ký Tài Khoản</h2>
+                <p class="subtitle">Tạo tài khoản để gửi đơn & tích Gcoin</p>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="signupName">Tên hiển thị</label>
+                        <input type="text" id="signupName" placeholder="Ví dụ: Nguyễn Văn An" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupGmail">Gmail đăng nhập</label>
+                        <input type="email" id="signupGmail" placeholder="email@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Mật khẩu (Tối thiểu 8 ký tự)</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="refCode">Mã giới thiệu (Không bắt buộc)</label>
+                        <input type="text" id="refCode" placeholder="Nhập mã giới thiệu (nếu có)...">
+                    </div>
+                    <button type="submit" class="btn" id="btnSignup" style="background-color: var(--accent-green);">Đăng Ký</button>
+                </form>
+                <div class="auth-switch">
+                    Đã có tài khoản? <a onclick="toggleAuthMode('login')">Đăng nhập</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DASHBOARD -->
+        <div class="dashboard-card" id="dashboardScreen">
+            <nav>
+                <div class="menu">
+                    <button class="menu-btn active" onclick="switchTab('tabSend', this)">Gửi Gmail</button>
+                    <button class="menu-btn" onclick="switchTab('tabWallet', this)">Ví & Rút Gcoin</button>
+                    <button class="menu-btn" onclick="switchTab('tabRewardHistory', this)">Lịch sử đổi thưởng</button>
+                </div>
+                
+                <div class="user-profile-badge">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userDisplay">Người dùng</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Thoát</button>
+                </div>
+            </nav>
+
+            <div class="content">
+                <!-- TAB 1: GỬI GMAIL -->
+                <div id="tabSend" class="tab-content active">
+                    <div class="rules-card">
+                        <h4>Quy định tạo Gmail bắt buộc:</h4>
+                        <ul>
+                            <li><b>Không</b> gắn số điện thoại & <b>không</b> thêm email khôi phục.</li>
+                            <li>Bắt buộc <b>ĐĂNG XUẤT</b> tài khoản khỏi thiết bị trước khi gửi đơn lên.</li>
+                            <li>Tài khoản chưa từng qua các dịch vụ khác.</li>
+                            <li>Tên tài khoản Google phải <b>đặt KHÔNG DẤU</b> (Ví dụ: <i>Nguyen Van An</i>).</li>
+                            <li>
+                                Mật khẩu bắt buộc đặt là: 
+                                <span class="pass-copy-box">
+                                    <code id="defaultPass">sKibidi67@@</code>
+                                    <button type="button" class="btn-copy" onclick="copyPassword()">Copy</button>
+                                </span>
+                            </li>
+                            <li>Thưởng: <b style="color: var(--accent-green);">+2.000 Gcoin</b> / 1 đơn duyệt thành công.</li>
+                        </ul>
+                    </div>
+
+                    <form id="gmailForm">
+                        <div class="form-group">
+                            <label for="gmailAddress">Gmail cần gửi</label>
+                            <input type="email" id="gmailAddress" placeholder="example@gmail.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gmailCreatedDate">Ngày tạo Gmail</label>
+                            <input type="date" id="gmailCreatedDate" required>
+                        </div>
+                        <button type="submit" class="btn" id="btnSubmitGmail">Gửi Đơn Duyệt</button>
+                    </form>
+
+                    <hr style="border: 0; border-top: 1px solid var(--border); margin: 24px 0 16px 0;">
+                    <h3 style="font-size: 14px; margin-bottom: 4px; color: var(--text-muted);">Danh sách đơn Gmail đã gửi</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Nhấp vào đơn bất kỳ để xem chi tiết</p>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Gmail</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thưởng</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gmailListTable">
+                                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: VÍ GCOIN & RÚT TIỀN -->
+                <div id="tabWallet" class="tab-content">
+                    <div class="wallet-card">
+                        <div>
+                            <div class="wallet-label">Số dư hiện tại</div>
+                            <div class="wallet-amount"><span id="balanceAmount">0</span> <small style="font-size: 14px; font-weight: normal;">Gcoin</small></div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 15px; margin-bottom: 12px;">Yêu cầu rút Gcoin</h3>
+                    <form id="withdrawForm">
+                        <div class="form-group">
+                            <label for="withdrawMethod">Hình thức nhận thưởng</label>
+                            <select id="withdrawMethod" onchange="toggleWithdrawFields()" required>
+                                <option value="">-- Chọn hình thức --</option>
+                                <option value="card">Thẻ cào điện thoại</option>
+                                <option value="cash" disabled style="color: #64748b;">Tiền mặt (Trực tiếp) - Tạm chưa hỗ trợ</option>
+                            </select>
+                        </div>
+
+                        <div id="cardFields" class="method-fields">
+                            <div class="form-group">
+                                <label for="cardTelco">Loại thẻ (Nhà mạng)</label>
+                                <select id="cardTelco">
+                                    <option value="Viettel">Viettel</option>
+                                    <option value="VinaPhone">VinaPhone</option>
+                                    <option value="MobiFone">MobiFone</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cardValue">Mệnh giá thẻ cào</label>
+                                <select id="cardValue" onchange="updateInvoice()">
+                                    <option value="10000">10.000đ (10.000 Gcoin)</option>
+                                    <option value="20000">20.000đ (20.000 Gcoin)</option>
+                                    <option value="50000">50.000đ (50.000 Gcoin)</option>
+                                    <option value="100000">100.000đ (100.000 Gcoin)</option>
+                                </select>
+                            </div>
+
+                            <div class="invoice-box">
+                                <div class="invoice-row">
+                                    <span>Mệnh giá thẻ:</span>
+                                    <span id="invValue">10.000 Gcoin</span>
+                                </div>
+                                <div class="invoice-row">
+                                    <span>Phí đơn hàng:</span>
+                                    <span>0 Gcoin</span>
+                                </div>
+                                <div class="invoice-row">
+                                    <span>Thuế dịch vụ:</span>
+                                    <span id="invTax">1.000 Gcoin</span>
+                                </div>
+                                <div class="invoice-row total">
+                                    <span>Tổng Gcoin trừ:</span>
+                                    <span id="invTotal" style="color: var(--accent-yellow);">11.000 Gcoin</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn" id="btnWithdraw" style="background-color: var(--accent-green);">Gửi Yêu Cầu Rút</button>
+                    </form>
+                </div>
+
+                <!-- TAB 3: LỊCH SỬ ĐỔI THƯỞNG -->
+                <div id="tabRewardHistory" class="tab-content">
+                    <h3 style="font-size: 15px; margin-bottom: 4px;">Lịch sử đổi thưởng</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Nhấp vào đơn bất kỳ để xem chi tiết</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Loại quy đổi</th>
+                                    <th>Giá đổi</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rewardListTable">
+                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MODALS -->
+    <div class="modal-overlay" id="rewardModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Chi tiết đơn đổi thưởng</span>
+                <button class="modal-close" onclick="closeRewardModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-row">
+                    <div class="info-label">Hình thức:</div>
+                    <div class="info-value" id="mType">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Giá đổi (Gcoin):</div>
+                    <div class="info-value" id="mPrice">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Trạng thái:</div>
+                    <div class="info-value" id="mStatus">-</div>
+                </div>
+
+                <div id="mSuccessBox" class="box-success-content" style="display: none;">
+                    <div style="font-weight: 700; margin-bottom: 4px;">Nội dung nhận thưởng:</div>
+                    <div id="mSuccessContent" style="white-space: pre-line; font-family: monospace;"></div>
+                </div>
+
+                <div id="mFailedBox" class="box-failed-content" style="display: none;">
+                    <div style="font-weight: 700; margin-bottom: 4px;">Lý do từ chối:</div>
+                    <div id="mFailedReason"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="gmailModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Chi tiết đơn Gmail</span>
+                <button class="modal-close" onclick="closeGmailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-row">
+                    <div class="info-label">Mã đơn:</div>
+                    <div class="info-value" id="gmCode">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Gmail:</div>
+                    <div class="info-value" id="gmEmail">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Ngày tạo:</div>
+                    <div class="info-value" id="gmDate">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Thưởng:</div>
+                    <div class="info-value" id="gmReward">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Trạng thái:</div>
+                    <div class="info-value" id="gmStatus">-</div>
+                </div>
+
+                <div id="gmFailedBox" class="box-failed-content" style="display: none;">
+                    <div style="font-weight: 700; margin-bottom: 4px;">Lý do từ chối:</div>
+                    <div id="gmFailedReason"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://gmail-backend-9gb9.onrender.com';
+        let currentUser = null;
+
+        function normalizeGmail(email) {
+            if (!email) return '';
+            const parts = email.trim().toLowerCase().split('@');
+            if (parts.length !== 2 || parts[1] !== 'gmail.com') return email.trim().toLowerCase();
+            return parts[0].replace(/\./g, '') + '@gmail.com';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('app_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    if (currentUser && currentUser.gmail) {
+                        showDashboard();
+                    }
+                } catch (e) {
+                    localStorage.removeItem('app_user');
+                }
+            }
+        });
+
+        function toggleAuthMode(mode) {
+            if (mode === 'signup') {
+                document.getElementById('loginBlock').style.display = 'none';
+                document.getElementById('signupBlock').style.display = 'block';
+            } else {
+                document.getElementById('signupBlock').style.display = 'none';
+                document.getElementById('loginBlock').style.display = 'block';
+            }
+        }
+
+        function setUserHeader(displayName) {
+            const name = displayName || 'Người dùng';
+            document.getElementById('userDisplay').innerText = name;
+            document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
+        }
+
+        function showDashboard() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            setUserHeader(currentUser.display_name || currentUser.name || currentUser.gmail);
+            loadUserData();
+        }
+
+        // 1. ĐĂNG NHẬP API
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin');
+            const loginGmail = normalizeGmail(document.getElementById('loginGmail').value);
+            const password = document.getElementById('loginPassword').value;
+
+            if (password.length < 8) {
+                alert('Mật khẩu phải chứa ít nhất 8 ký tự!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Đang kiểm tra...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gmail: loginGmail, password: password })
+                });
+
+                const result = await response.json();
+
+                // KIỂM TRA CHẶT CHẼ PHẢN HỒI TỪ SERVER
+                if (response.ok && result.success === true) {
+                    currentUser = {
+                        gmail: loginGmail,
+                        display_name: result.display_name || result.name || (result.user && result.user.display_name) || loginGmail.split('@')[0],
+                        token: result.token || ''
+                    };
+                    localStorage.setItem('app_user', JSON.stringify(currentUser));
+                    showDashboard();
+                } else {
+                    alert('Đăng nhập thất bại: ' + (result.message || 'Tài khoản hoặc mật khẩu không chính xác!'));
+                }
+            } catch (err) {
+                alert('Không thể kết nối đến máy chủ Backend!');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Đăng Nhập';
+            }
+        });
+
+        // 2. ĐĂNG KÝ API
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSignup');
+            const displayName = document.getElementById('signupName').value.trim();
+            const cleanGmail = normalizeGmail(document.getElementById('signupGmail').value);
+            const password = document.getElementById('signupPassword').value;
+            const refCode = document.getElementById('refCode').value.trim();
+
+            if (password.length < 8) {
+                alert('Mật khẩu đăng ký phải từ 8 ký tự trở lên!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Đang đăng ký...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        display_name: displayName,
+                        gmail: cleanGmail,
+                        password: password,
+                        ref_code: refCode
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success === true) {
+                    alert('Đăng ký tài khoản thành công!');
+                    currentUser = {
+                        gmail: cleanGmail,
+                        display_name: displayName,
+                        token: result.token || ''
+                    };
+                    localStorage.setItem('app_user', JSON.stringify(currentUser));
+                    showDashboard();
+                } else {
+                    alert('Đăng ký thất bại: ' + (result.message || 'Tài khoản đã tồn tại hoặc dữ liệu không hợp lệ!'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ khi đăng ký!');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Đăng Ký';
+            }
+        });
+
+        // 3. GỬI ĐƠN GMAIL API
+        document.getElementById('gmailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitGmail');
+            const rawGmail = document.getElementById('gmailAddress').value;
+            const cleanGmail = normalizeGmail(rawGmail);
+            const createdDate = document.getElementById('gmailCreatedDate').value;
+
+            btn.disabled = true;
+            btn.innerText = 'Đang gửi...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/send-gmail`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_gmail: currentUser.gmail,
+                        gmail_address: cleanGmail,
+                        created_date: createdDate
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success === true) {
+                    alert('Đã gửi đơn Gmail thành công!');
+                    this.reset();
+                    loadUserData();
+                } else {
+                    alert('Gửi đơn thất bại: ' + (result.message || 'Gmail đã tồn tại trong hệ thống!'));
+                }
+            } catch (err) {
+                alert('Đã xảy ra lỗi kết nối tới Server!');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Gửi Đơn Duyệt';
+            }
+        });
+
+        // TẢI DỮ LIỆU TỪ DATABASE
+        async function loadUserData() {
+            if (!currentUser || !currentUser.gmail) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/user-data?gmail=${encodeURIComponent(currentUser.gmail)}`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.success) {
+                    // Cập nhật lại tên nếu backend trả về tên đúng
+                    if (data.display_name || data.name) {
+                        currentUser.display_name = data.display_name || data.name;
+                        localStorage.setItem('app_user', JSON.stringify(currentUser));
+                        setUserHeader(currentUser.display_name);
+                    }
+
+                    // Update Ví
+                    document.getElementById('balanceAmount').innerText = (data.balance || 0).toLocaleString('vi-VN');
+
+                    // Render bảng
+                    renderGmailTable(data.gmail_list || []);
+                    renderRewardTable(data.reward_list || []);
+                }
+            } catch (e) {
+                console.log('Lỗi tải dữ liệu người dùng:', e);
+            }
+        }
+
+        function renderGmailTable(list) {
+            const tbody = document.getElementById('gmailListTable');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Chưa có đơn Gmail nào được gửi.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map((item, idx) => {
+                const badgeClass = item.status === 'approved' ? 'approved' : (item.status === 'rejected' ? 'rejected' : 'pending');
+                const statusText = item.status === 'approved' ? 'Đã duyệt' : (item.status === 'rejected' ? 'Từ chối' : 'Đang chờ');
+                const code = `#G${String(idx + 1).padStart(3, '0')}`;
+                
+                return `
+                    <tr class="clickable-row" onclick="showGmailModal('${code}', '${item.gmail_address}', '${item.created_date}', '2.000 Gcoin', '${item.status}', '${item.reason || ''}')">
+                        <td>${code}</td>
+                        <td>${item.gmail_address}</td>
+                        <td>${item.created_date}</td>
+                        <td>2.000 Gcoin</td>
+                        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRewardTable(list) {
+            const tbody = document.getElementById('rewardListTable');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Chưa có lịch sử đổi thưởng.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map((item, idx) => {
+                const badgeClass = item.status === 'approved' ? 'approved' : (item.status === 'rejected' ? 'rejected' : 'pending');
+                const statusText = item.status === 'approved' ? 'Thành công' : (item.status === 'rejected' ? 'Thất bại' : 'Đang chờ');
+                const code = `#R${String(idx + 1).padStart(3, '0')}`;
+
+                return `
+                    <tr class="clickable-row" onclick="showRewardModal('${item.type}', '${item.price} Gcoin', '${item.status}', '${item.reason || ''}', '${item.content || ''}')">
+                        <td>${code}</td>
+                        <td>${item.type}</td>
+                        <td>${item.price} Gcoin</td>
+                        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function logout() {
+            localStorage.removeItem('app_user');
+            currentUser = null;
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+            toggleAuthMode('login');
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function copyPassword() {
+            const passText = document.getElementById('defaultPass').innerText;
+            navigator.clipboard.writeText(passText).then(() => {
+                alert('Đã copy mật khẩu: ' + passText);
+            });
+        }
+
+        function toggleWithdrawFields() {
+            const method = document.getElementById('withdrawMethod').value;
+            const cardFields = document.getElementById('cardFields');
+
+            if (method === 'card') {
+                cardFields.style.display = 'block';
+                updateInvoice();
+            } else {
+                cardFields.style.display = 'none';
+            }
+        }
+
+        function updateInvoice() {
+            const val = parseInt(document.getElementById('cardValue').value);
+            const tax = val < 50000 ? 1000 : 0;
+            const total = val + tax;
+
+            document.getElementById('invValue').innerText = val.toLocaleString('vi-VN') + ' Gcoin';
+            document.getElementById('invTax').innerText = tax.toLocaleString('vi-VN') + ' Gcoin';
+            document.getElementById('invTotal').innerText = total.toLocaleString('vi-VN') + ' Gcoin';
+        }
+
+        function showRewardModal(type, price, status, failedReason, successContent) {
+            document.getElementById('mType').innerText = type;
+            document.getElementById('mPrice').innerText = price;
+
+            const mStatus = document.getElementById('mStatus');
+            const mSuccessBox = document.getElementById('mSuccessBox');
+            const mFailedBox = document.getElementById('mFailedBox');
+
+            mSuccessBox.style.display = 'none';
+            mFailedBox.style.display = 'none';
+
+            if(status === 'approved') {
+                mStatus.innerHTML = '<span class="badge approved">Thành công</span>';
+                mSuccessBox.style.display = 'block';
+                document.getElementById('mSuccessContent').innerText = successContent;
+            } else if(status === 'rejected') {
+                mStatus.innerHTML = '<span class="badge rejected">Thất bại</span>';
+                mFailedBox.style.display = 'block';
+                document.getElementById('mFailedReason').innerText = failedReason;
+            } else {
+                mStatus.innerHTML = '<span class="badge pending">Đang chờ duyệt</span>';
+            }
+
+            document.getElementById('rewardModal').style.display = 'flex';
+        }
+
+        function closeRewardModal() {
+            document.getElementById('rewardModal').style.display = 'none';
+        }
+
+        function showGmailModal(code, email, date, reward, status, failedReason) {
+            document.getElementById('gmCode').innerText = code;
+            document.getElementById('gmEmail').innerText = email;
+            document.getElementById('gmDate').innerText = date;
+            document.getElementById('gmReward').innerText = reward;
+
+            const gmStatus = document.getElementById('gmStatus');
+            const gmFailedBox = document.getElementById('gmFailedBox');
+
+            gmFailedBox.style.display = 'none';
+
+            if(status === 'approved') {
+                gmStatus.innerHTML = '<span class="badge approved">Đã duyệt</span>';
+            } else if(status === 'rejected') {
+                gmStatus.innerHTML = '<span class="badge rejected">Từ chối</span>';
+                gmFailedBox.style.display = 'block';
+                document.getElementById('gmFailedReason').innerText = failedReason;
+            } else {
+                gmStatus.innerHTML = '<span class="badge pending">Đang chờ</span>';
+            }
+
+            document.getElementById('gmailModal').style.display = 'flex';
+        }
+
+        function closeGmailModal() {
+            document.getElementById('gmailModal').style.display = 'none';
+        }
+
+        document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const method = document.getElementById('withdrawMethod').value;
+            if(!method) {
+                alert('Vui lòng chọn hình thức nhận thưởng!');
+                return;
+            }
+
+            const telco = document.getElementById('cardTelco').value;
+            const amount = document.getElementById('cardValue').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_gmail: currentUser.gmail,
+                        telco: telco,
+                        amount: amount
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success === true) {
+                    alert('Đã tạo đơn đổi thưởng thành công!');
+                    this.reset();
+                    toggleWithdrawFields();
+                    loadUserData();
+                } else {
+                    alert('Yêu cầu thất bại: ' + (result.message || 'Không đủ số dư'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối hệ thống!');
+            }
+        });
+    </script>
+</body>
+</html>
