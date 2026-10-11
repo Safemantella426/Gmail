@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+        .app-container { width: 100%; max-width: 680px; margin: 0 auto; }
+
+        .auth-card { background: var(--bg-card); padding: 28px 24px; border-radius: 12px; border: 1px solid var(--border); max-width: 380px; margin: 0 auto; }
+        .auth-card h2 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+        .auth-card p.subtitle { color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 12px; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13px; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+        .btn { width: 100%; padding: 10px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .auth-switch { text-align: center; margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+        .auth-switch a { color: var(--primary); cursor: pointer; font-weight: 600; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .wallet-card { background: linear-gradient(135deg, #1e3a8a, #2563eb); border-radius: 8px; padding: 16px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .wallet-amount { font-size: 24px; font-weight: 700; color: #ffffff; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; white-space: nowrap; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); background-color: #0f172a; }
+
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge.pending { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); }
+        .badge.approved { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .badge.rejected { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        .form-msg { margin-top: 10px; font-size: 12px; min-height: 16px; color: var(--text-muted); }
+        .form-msg.ok { color: var(--accent-green); }
+        .form-msg.err { color: var(--accent-red); }
+        .cell-data { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+        #taskListTable tr[data-idx] { cursor: pointer; }
+        #taskListTable tr[data-idx]:hover { background: rgba(255, 255, 255, 0.04); }
+
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+        .modal-backdrop.open { display: flex; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; padding: 18px; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .modal-head h3 { font-size: 15px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; }
+        .detail-row { padding: 9px 0; border-bottom: 1px solid var(--border); }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-k { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+        .detail-v { font-size: 14px; word-break: break-word; white-space: pre-wrap; }
+        .detail-v.mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+        .detail-v.fail { color: var(--accent-red); }
+        .detail-v.good { color: var(--accent-green); }
+
+        .section-title { font-size: 14px; margin: 20px 0 10px 0; color: var(--text-muted); }
+        .invoice { background: var(--bg-card); border: 1px dashed var(--border); border-radius: 10px; padding: 12px 14px; margin: 12px 0; font-size: 13px; }
+        .invoice-title { font-weight: 600; margin-bottom: 8px; }
+        .invoice-row { display: flex; justify-content: space-between; padding: 3px 0; color: var(--text-muted); }
+        .invoice-row.total { color: var(--text-main); font-weight: 700; border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
+        .invoice-row.short span:last-child { color: var(--accent-red); }
+        .empty-note { text-align: center; color: var(--text-muted); font-size: 13px; padding: 16px 0; }
+        #redeemListTable tr[data-idx] { cursor: pointer; }
+        #redeemListTable tr[data-idx]:hover { background: rgba(255, 255, 255, 0.04); }
+
+        /* Hướng dẫn */
+        .guide-intro { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+        .guide-steps { list-style: none; counter-reset: step; }
+        .guide-steps li { counter-increment: step; position: relative; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px 12px 50px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+        .guide-steps li::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .guide-steps li b { display: block; font-size: 14px; margin-bottom: 2px; }
+        .guide-note { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-yellow); border-radius: 10px; padding: 10px 14px; font-size: 12px; line-height: 1.5; margin: 14px 0; }
+        .guide-faq details { border-bottom: 1px solid var(--border); padding: 10px 0; font-size: 13px; }
+        .guide-faq summary { cursor: pointer; font-weight: 600; }
+        .guide-faq p { margin-top: 8px; color: var(--text-muted); line-height: 1.5; }
+
+        .reveal-box { margin-top: 4px; }
+        .reveal-box .form-group { margin: 8px 0; }
+        .reveal-box .form-group input { width: 100%; padding: 10px 12px; background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13px; outline: none; }
+        .reveal-box .form-group input:focus { border-color: var(--primary); }
+
+        .invite-card { background: linear-gradient(135deg, #064e3b, #047857); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; text-align: center; }
+        .invite-card .detail-k { color: #a7f3d0; }
+        .invite-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 28px; font-weight: 700; letter-spacing: 4px; margin: 6px 0 12px 0; word-break: break-all; }
+        .invite-actions { display: flex; gap: 8px; }
+        .invite-actions .btn { background: rgba(255,255,255,0.15); }
+        .invite-actions .btn:hover { background: rgba(255,255,255,0.25); }
+        .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .stat { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+        .stat b { display: block; font-size: 20px; }
+        .stat span { font-size: 11px; color: var(--text-muted); }
+        .info-note { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; border-radius: 10px; padding: 10px 14px; font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+
+        body { display: block; padding: 0; }
+        .app-container { max-width: none; margin: 0; }
+        .auth-card { margin: 8vh auto; width: calc(100% - 32px); }
+        .dashboard-card { display: none; min-height: 100vh; }
+        .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: rgba(15,23,42,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+        .topbar-title { flex: 1; font-size: 16px; font-weight: 700; }
+        .icon-btn { width: 40px; height: 40px; border: none; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-size: 20px; cursor: pointer; }
+        .chip { background: rgba(59,130,246,.15); color: #93c5fd; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 40; }
+        .scrim.open { display: block; }
+        .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 272px; max-width: 84vw; z-index: 50; background: #0b1220; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 18px 12px; transform: translateX(-100%); transition: transform .22s ease; }
+        .drawer.open { transform: none; }
+        .drawer-user { display: flex; align-items: center; gap: 12px; padding: 6px 8px 18px; margin-bottom: 12px; border-bottom: 1px solid var(--border); min-width: 0; }
+        .drawer-user > div:last-child { min-width: 0; }
+        .drawer-user b, .drawer-user small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .drawer-user b { font-size: 14px; } .drawer-user small { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .user-avatar { width: 40px; height: 40px; flex: none; border-radius: 50%; background: linear-gradient(135deg,#3b82f6,#8b5cf6); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .drawer-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .menu-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; }
+        .menu-btn:hover { background: rgba(255,255,255,.05); }
+        .menu-btn.active { background: rgba(59,130,246,.18); color: #fff; box-shadow: inset 3px 0 0 var(--primary); }
+        .btn-logout { width: 100%; padding: 11px; border-radius: 10px; background: rgba(239,68,68,.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,.25); font-size: 13px; font-weight: 600; cursor: pointer; }
+        .content { padding: 20px clamp(16px, 4vw, 40px) 48px; }
+        @media (min-width: 900px) {
+            .drawer { transform: none; }
+            #btnMenu { display: none; }
+            .topbar, .content { margin-left: 272px; }
+        }
+
+        .form-group input, .form-group select { padding: 12px 14px; font-size: 14px; border-radius: 10px; }
+        .btn { padding: 12px; border-radius: 10px; font-size: 14px; }
+        .card, #taskForm, #voucherList, .table-responsive { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+        .table-responsive { padding: 4px 10px; }
+        .table-responsive table { margin-top: 0; }
+        .card.narrow { max-width: 520px; }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+        .kv { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .kv:last-of-type { border-bottom: none; } .kv span:first-child { color: var(--text-muted); } .kv span:last-child { word-break: break-all; text-align: right; }
+        th { background: transparent; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+        .wallet-card { border-radius: 14px; padding: 22px 24px; }
+        .wallet-amount { font-size: 32px; }
+        .section-title { font-size: 15px; font-weight: 600; color: var(--text-main); margin: 24px 0 10px; }
+        .tab-content.active { animation: fadeIn .2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- AUTH SCREEN -->
+        <div class="auth-card" id="authScreen">
+            <div id="loginBlock">
+                <h2>Đăng Nhập</h2>
+                <p class="subtitle">Hệ thống quản lý công việc & điểm thưởng</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Tài khoản Email</label>
+                        <input type="email" id="loginEmail" placeholder="user@domain.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" minlength="8" maxlength="128" required>
+                    </div>
+                    <button type="submit" class="btn" id="btnLogin">Đăng Nhập</button>
+                </form>
+                <div class="auth-switch">
+                    Chưa có tài khoản? <a onclick="toggleAuthMode('signup')">Đăng ký</a>
+                </div>
+            </div>
+
+            <div id="signupBlock" style="display: none;">
+                <h2>Đăng Ký Tài Khoản</h2>
+                <p class="subtitle">Tạo tài khoản để bắt đầu nhận Task</p>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label>Tên hiển thị</label>
+                        <input type="text" id="signupName" placeholder="Nguyễn Văn A" maxlength="40" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email đăng ký</label>
+                        <input type="email" id="signupEmail" placeholder="user@domain.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" maxlength="128" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã mời (không bắt buộc)</label>
+                        <input type="text" id="signupRef" placeholder="vd: AB12CD34" maxlength="12" autocapitalize="characters" style="text-transform: uppercase;">
+                    </div>
+                    <div id="cfWidget" style="margin-bottom: 14px;"></div>
+                    <button type="submit" class="btn" id="btnSignup" style="background-color: var(--accent-green);">Đăng Ký</button>
+                </form>
+                <div class="auth-switch">
+                    Đã có tài khoản? <a onclick="toggleAuthMode('login')">Đăng nhập</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="dashboard-card" id="dashboardScreen">
+            <header class="topbar">
+                <button type="button" class="icon-btn" id="btnMenu" aria-label="Mở menu">☰</button>
+                <div class="topbar-title" id="pageTitle">Gửi Mail</div>
+                <div class="chip" title="Số dư"><span id="topBalance">0</span> Gcoin</div>
+            </header>
+            <div class="scrim" id="scrim"></div>
+            <aside class="drawer" id="drawer">
+                <div class="drawer-user">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div><b id="userDisplay">User</b><small id="userEmail"></small></div>
+                </div>
+                <nav class="drawer-nav">
+                    <button class="menu-btn active" data-tab="tabTask" onclick="switchTab('tabTask')">Gửi Mail</button>
+                    <button class="menu-btn" data-tab="tabWallet" onclick="switchTab('tabWallet')">Ví Điểm Thưởng</button>
+                    <button class="menu-btn" data-tab="tabInvite" onclick="switchTab('tabInvite')">Mời bạn bè</button>
+                    <button class="menu-btn" data-tab="tabGuide" id="menuGuide" onclick="switchTab('tabGuide')">Hướng dẫn</button>
+                    <button class="menu-btn" data-tab="tabSettings" onclick="switchTab('tabSettings')">Cài đặt</button>
+                </nav>
+                <button type="button" class="btn-logout" onclick="logout()">Đăng xuất</button>
+            </aside>
+
+            <div class="content">
+                <!-- TAB 1: SUBMIT TASK -->
+                <div id="tabTask" class="tab-content active">
+                    <form id="taskForm">
+                        <div class="form-group">
+                            <label>Gmail</label>
+                            <input type="text" id="taskData" placeholder="Nhập Gmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày tạo</label>
+                            <input type="date" id="taskDate" required>
+                        </div>
+                        <button type="submit" class="btn" id="btnSubmitTask">Gửi</button>
+                        <div class="form-msg" id="taskMsg"></div>
+                    </form>
+
+                    <h3 style="font-size: 14px; margin: 20px 0 4px 0; color: var(--text-muted);">Các mail đã nộp</h3>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Bấm vào một đơn để xem chi tiết</div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã số</th>
+                                    <th>Gmail</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskListTable">
+                                <tr><td colspan="4" style="text-align: center;">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB: MỜI BẠN BÈ -->
+                <div id="tabInvite" class="tab-content">
+                    <div class="invite-card">
+                        <div class="detail-k">Mã mời của bạn</div>
+                        <div class="invite-code" id="inviteCode">—</div>
+                        <div class="invite-actions">
+                            <button type="button" class="btn" id="btnCopyCode">Sao chép mã</button>
+                            <button type="button" class="btn" id="btnCopyLink">Sao chép link mời</button>
+                        </div>
+                    </div>
+                    <div class="form-msg" id="inviteMsg"></div>
+                    <div class="info-note" id="inviteRules"></div>
+                    <div class="info-note" id="inviteStatus" style="display:none;"></div>
+                    <div class="stat-row">
+                        <div class="stat"><b id="statInvited">0</b><span>Bạn bè đã mời</span></div>
+                        <div class="stat"><b id="statEarned">0</b><span>Gcoin hoa hồng đã nhận</span></div>
+                    </div>
+                    <h3 class="section-title" style="margin-top:6px;">Hoa hồng gần đây</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Thời gian</th><th>Từ bạn</th><th>Gcoin</th></tr></thead>
+                            <tbody id="inviteHistory"><tr><td colspan="3" style="text-align:center;">Chưa có</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 3: HƯỚNG DẪN -->
+                <div id="tabGuide" class="tab-content">
+                    <p class="guide-intro">Làm theo các bước dưới đây để hoàn thành công việc, gửi báo cáo, nhận điểm thưởng và đổi thưởng.</p>
+
+                    <ul class="guide-steps" style="list-style: none;">
+                        <li>
+                            <b>1. Chuẩn bị tài khoản &amp; Tuân thủ quy định</b>
+                            <ul style="margin-top: 6px; padding-left: 18px; color: var(--text-muted);">
+                                <li>Tên tài khoản Google bắt buộc đặt <strong style="color: var(--text-main);">KHÔNG DẤU</strong> (Ví dụ: <code>Nguyen Van An</code>).</li>
+                                <li>Tài khoản <strong style="color: var(--text-main);">chưa từng qua các dịch vụ khác</strong>.</li>
+                                <li><strong style="color: var(--accent-red);">Không</strong> gắn số điện thoại &amp; <strong style="color: var(--accent-red);">không</strong> thêm email khôi phục.</li>
+                                <li style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                                    <span>Mật khẩu bắt buộc đặt là:</span>
+                                    <code style="background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--accent-yellow); border: 1px solid var(--border);">sKibidi67@@</code>
+                                    <button type="button" onclick="navigator.clipboard.writeText('sKibidi67@@'); this.textContent='Đã chép!'; setTimeout(()=>this.textContent='Copy', 1500);" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">Copy</button>
+                                </li>
+                            </ul>
+                        </li>
+                        <li style="margin-top: 8px;">
+                            <b>2. Đăng xuất trước khi gửi</b>
+                            <span style="color: var(--text-muted); display: block; margin-top: 4px;"><strong style="color: var(--accent-red);">Bắt buộc ĐĂNG XUẤT</strong> tài khoản Google ra khỏi thiết bị trước khi tiến hành gửi đơn lên hệ thống.</span>
+                        </li>
+                        <li style="margin-top: 8px;">
+                            <b>3. Gửi Gmail đi</b>
+                            <span style="color: var(--text-muted); display: block; margin-top: 4px;">Vào tab <em>Gửi mail</em>, dán gmail vào ô tương ứng, chọn ngày tạo rồi bấm <em>Gửi</em>. Mỗi đơn duyệt thành công nhận thưởng: <strong style="color: var(--accent-green);">+2.000 Gcoin</strong>.</span>
+                        </li>
+                        <li style="margin-top: 8px;">
+                            <b>4. Chờ duyệt &amp; Nhận thưởng</b>
+                            <span style="color: var(--text-muted); display: block; margin-top: 4px;">Admin sẽ kiểm tra. Trạng thái <em>Chờ duyệt</em> = đang xem xét, <em>Đã duyệt</em> = được cộng Gcoin, <em>Không đạt</em> = bấm vào đơn để xem lý do, sửa lại và nộp lại.</span>
+                        </li>
+                        <li style="margin-top: 8px;">
+                            <b>5. Đổi thưởng</b>
+                            <span style="color: var(--text-muted); display: block; margin-top: 4px;">Vào tab <em>Ví Điểm Thưởng</em>, chọn loại thẻ và mệnh giá, kiểm tra hoá đơn kỹ rồi bấm thanh toán. Khi đơn thành công, bấm vào đơn và nhập mật khẩu để xem thông tin chi tiết.</span>
+                        </li>
+                    </ul>
+
+                    <div class="guide-note">
+                        Lưu ý: Luôn tuân thủ tuyệt đối các quy định về tên tài khoản và mật khẩu để đơn được duyệt nhanh chóng. Thưởng +2.000 Gcoin cho mỗi đơn duyệt thành công!
+                    </div>
+
+                    <h3 class="section-title">Câu hỏi thường gặp</h3>
+                    <div class="guide-faq">
+                        <details>
+                            <summary>Vì sao tài khoản phải đặt tên không dấu?</summary>
+                            <p>Đây là quy định chung của hệ thống nhằm chuẩn hóa dữ liệu tài khoản khi bàn giao hoặc kiểm tra.</p>
+                        </details>
+                        <details>
+                            <summary>Tại sao phải đăng xuất thiết bị trước khi gửi đơn?</summary>
+                            <p>Việc này giúp bảo mật thông tin và đảm bảo tài khoản ở trạng thái sạch, không bị xung đột phiên đăng nhập trên thiết bị của bạn.</p>
+                        </details>
+                        <details>
+                            <summary>Đơn bị "Không đạt" thì phải làm sao?</summary>
+                            <p>Bấm vào đơn để xem lý do từ admin, tiến hành chỉnh sửa lại theo đúng yêu cầu rồi nộp lại đơn mới.</p>
+                        </details>
+                        <details>
+                            <summary>Các vấn đề khác</summary>
+                            <p>Chi tiết liên hệ admin qua Zalo: <a href="http://zaloapp.com/qr/p/bb9jiizsx1rp" target="_blank" style="color: var(--primary); text-decoration: underline;">Nhắn tin Zalo</a></p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- TAB: CÀI ĐẶT -->
+                <div id="tabSettings" class="tab-content">
+                    <div class="card narrow" style="margin-bottom:16px;">
+                        <h3 class="card-title">Tài khoản</h3>
+                        <div class="kv"><span>Tên hiển thị</span><span id="setName">—</span></div>
+                        <div class="kv"><span>Email</span><span id="setEmail">—</span></div>
+                    </div>
+                    <div class="card narrow">
+                        <h3 class="card-title">Đổi mật khẩu</h3>
+                        <form id="pwForm">
+                            <div class="form-group"><label>Mật khẩu hiện tại</label>
+                                <input type="password" id="pwOld" autocomplete="current-password" maxlength="128" required></div>
+                            <div class="form-group"><label>Mật khẩu mới (8 - 128 ký tự)</label>
+                                <input type="password" id="pwNew" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+                            <div class="form-group"><label>Nhập lại mật khẩu mới</label>
+                                <input type="password" id="pwNew2" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+                            <button type="submit" class="btn" id="btnChangePw">Đổi mật khẩu</button>
+                            <div class="form-msg" id="pwMsg"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 2: WALLET -->
+                <div id="tabWallet" class="tab-content">
+                    <div class="wallet-card">
+                        <div>
+                            <div style="font-size:12px; color:#93c5fd;">Số dư hiện tại</div>
+                            <div class="wallet-amount"><span id="balanceAmount">0</span> <small style="font-size:14px;">Gcoin</small></div>
+                        </div>
+                    </div>
+                    <div id="walletMsg" class="form-msg"></div>
+
+                    <h3 class="section-title" style="margin-top:6px;">Đổi Thưởng</h3>
+                    <div id="voucherList"><div class="empty-note">Đang tải...</div></div>
+
+                    <h3 class="section-title" style="margin-bottom:4px;">Đơn đổi của bạn</h3>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Bấm vào một đơn để xem chi tiết</div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Loại thẻ & Mệnh giá</th>
+                                    <th>Gcoin</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="redeemListTable">
+                                <tr><td colspan="4" style="text-align: center;">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chi tiết modal -->
+    <div class="modal-backdrop" id="taskModal">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal-head">
+                <h3 id="modalTitle">Chi tiết</h3>
+                <button type="button" class="modal-close" id="modalClose" aria-label="Đóng">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://gmail-backend-9gb9.onrender.com';
+
+        const TURNSTILE_SITE_KEY = '';
+        let tsWidgetId = null;
+        function initTurnstile() {
+            if (!TURNSTILE_SITE_KEY) return;
+            const s = document.createElement('script');
+            s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+            s.async = true;
+            s.onload = () => { tsWidgetId = turnstile.render('#cfWidget', { sitekey: TURNSTILE_SITE_KEY, theme: 'dark' }); };
+            document.head.appendChild(s);
+        }
+        let currentUser = null;
+
+        const STATUS_LABEL = { pending: 'Chờ duyệt', approved: 'Đã duyệt', rejected: 'Không đạt - nộp lại được' };
+
+        function escapeHtml(str) {
+            return String(str ?? '').replace(/[&<>"']/g, ch => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+            ));
+        }
+
+        function setMsg(el, text, type) {
+            el.textContent = text;
+            el.className = 'form-msg ' + (type || '');
+        }
+
+        function todayStr() {
+            const d = new Date();
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            return d.toISOString().slice(0, 10);
+        }
+
+        async function api(path, options = {}, onSlow) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 90000);
+            const slowTimer = onSlow ? setTimeout(onSlow, 5000) : null;
+            try {
+                const headers = { ...(options.headers || {}) };
+                if (currentUser && currentUser.token) headers['Authorization'] = 'Bearer ' + currentUser.token;
+                const res = await fetch(API_BASE_URL + path, { ...options, headers, signal: controller.signal });
+                let data;
+                try {
+                    data = await res.json();
+                } catch {
+                    data = { success: false, message: 'Máy chủ trả về dữ liệu không hợp lệ.' };
+                }
+                if (res.status === 401 && currentUser) {
+                    forceLogout('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+                    data.success = false;
+                }
+                return data;
+            } catch (err) {
+                return {
+                    success: false,
+                    message: err.name === 'AbortError'
+                        ? 'Máy chủ phản hồi quá lâu, vui lòng thử lại.'
+                        : 'Không kết nối được máy chủ.'
+                };
+            } finally {
+                clearTimeout(timeout);
+                if (slowTimer) clearTimeout(slowTimer);
+            }
+        }
+
+        function forceLogout(message) {
+            localStorage.removeItem('app_user');
+            currentUser = null;
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = '';
+            if (message) alert(message);
+        }
+
+        function toggleAuthMode(mode) {
+            document.getElementById('loginBlock').style.display = mode === 'signup' ? 'none' : 'block';
+            document.getElementById('signupBlock').style.display = mode === 'signup' ? 'block' : 'none';
+        }
+
+        const TAB_TITLES = { tabTask: 'Gửi Mail', tabWallet: 'Ví Điểm Thưởng', tabInvite: 'Mời bạn bè', tabGuide: 'Hướng dẫn', tabSettings: 'Cài đặt' };
+
+        function setDrawer(open) {
+            document.getElementById('drawer').classList.toggle('open', open);
+            document.getElementById('scrim').classList.toggle('open', open);
+        }
+        document.getElementById('btnMenu').addEventListener('click', () => setDrawer(true));
+        document.getElementById('scrim').addEventListener('click', () => setDrawer(false));
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id === tabId));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+            document.getElementById('pageTitle').textContent = TAB_TITLES[tabId] || '';
+            setDrawer(false);
+            window.scrollTo(0, 0);
+        }
+
+        function logout() {
+            localStorage.removeItem('app_user');
+            location.reload();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin');
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            btn.disabled = true; btn.textContent = 'Đang đăng nhập...';
+            const data = await api('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gmail: email, password: password })
+            }, () => { btn.textContent = 'Máy chủ đang khởi động...'; });
+            btn.disabled = false; btn.textContent = 'Đăng Nhập';
+
+            if (data.success) {
+                currentUser = { email: email, display_name: data.display_name || email, token: data.token };
+                localStorage.setItem('app_user', JSON.stringify(currentUser));
+                showDashboard();
+            } else {
+                alert(data.message || 'Đăng nhập thất bại');
+            }
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSignup');
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            const cfToken = (tsWidgetId !== null && window.turnstile) ? turnstile.getResponse(tsWidgetId) : '';
+            if (TURNSTILE_SITE_KEY && !cfToken) { alert('Vui lòng hoàn tất bước xác minh "Tôi không phải robot".'); return; }
+
+            btn.disabled = true; btn.textContent = 'Đang đăng ký...';
+            const data = await api('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ display_name: name, gmail: email, password: password, cf_token: cfToken, ref_code: document.getElementById('signupRef').value.trim() })
+            }, () => { btn.textContent = 'Máy chủ đang khởi động...'; });
+            btn.disabled = false; btn.textContent = 'Đăng Ký';
+            if (tsWidgetId !== null && window.turnstile) turnstile.reset(tsWidgetId);
+
+            if (data.success) {
+                alert((data.message || 'Đăng ký thành công!') + '\nHãy đăng nhập.');
+                document.getElementById('loginEmail').value = email;
+                toggleAuthMode('login');
+            } else {
+                alert(data.message || 'Đăng ký thất bại');
+            }
+        });
+
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const btn = document.getElementById('btnSubmitTask');
+            const msg = document.getElementById('taskMsg');
+            const taskInput = document.getElementById('taskData');
+            const taskData = taskInput.value.trim();
+            const date = document.getElementById('taskDate').value;
+
+            if (!taskData) { setMsg(msg, 'Vui lòng nhập Gmail', 'err'); return; }
+            if (taskData.length > 200) { setMsg(msg, 'Gmail tối đa 200 ký tự.', 'err'); return; }
+
+            btn.disabled = true; btn.textContent = 'Đang gửi...';
+            setMsg(msg, '', '');
+
+            const data = await api('/api/send-gmail', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    gmail_address: taskData,
+                    created_date: date
+                })
+            }, () => setMsg(msg, 'Máy chủ đang khởi động, vui lòng đợi thêm chút...', ''));
+
+            btn.disabled = false; btn.textContent = 'Gửi';
+
+            if (data.success) {
+                setMsg(msg, data.message || 'Nộp gmail thành công!', 'ok');
+                taskInput.value = '';
+                loadData();
+            } else {
+                setMsg(msg, data.message || 'Nộp gmail thất bại.', 'err');
+            }
+        });
+
+        let currentList = [];
+
+        function orderCodeOf(item) {
+            if (item.order_id) return item.order_id;
+            return item.time ? 'T' + Number(item.time).toString(36).toUpperCase() : '—';
+        }
+
+        function fmtDateTime(sec) {
+            return sec ? new Date(sec * 1000).toLocaleString('vi-VN') : '—';
+        }
+
+        function showDetailModal(title, rows, hint) {
+            document.getElementById('modalTitle').textContent = title;
+            const body = document.getElementById('modalBody');
+            body.innerHTML = '';
+            rows.forEach(([k, v, cls]) => {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                const kEl = document.createElement('div'); kEl.className = 'detail-k'; kEl.textContent = k;
+                const vEl = document.createElement('div'); vEl.className = 'detail-v ' + (cls || ''); vEl.textContent = v;
+                row.appendChild(kEl); row.appendChild(vEl);
+                body.appendChild(row);
+            });
+            if (hint) {
+                const hEl = document.createElement('div');
+                hEl.className = 'detail-k'; hEl.style.marginTop = '10px';
+                hEl.textContent = hint;
+                body.appendChild(hEl);
+            }
+            document.getElementById('taskModal').classList.add('open');
+        }
+
+        function openTaskModal(item) {
+            const known = Object.prototype.hasOwnProperty.call(STATUS_LABEL, item.status);
+            const rows = [
+                ['Mã đơn', orderCodeOf(item), 'mono'],
+                ['Trạng thái', known ? STATUS_LABEL[item.status] : item.status, ''],
+                ['Gmail đã nộp', item.gmail_address, 'mono'],
+                ['Ngày tạo', item.created_date || '—', ''],
+                ['Thời gian nộp', fmtDateTime(item.time), ''],
+                ['Thưởng',
+                    item.status === 'approved' ? (item.reward || 0).toLocaleString() + ' Gcoin'
+                        : item.status === 'rejected' ? '0 Gcoin' : 'Chưa có (đang chờ duyệt)', '']
+            ];
+            if (item.status === 'approved' && item.reviewed_at) rows.push(['Thời gian duyệt', fmtDateTime(item.reviewed_at), '']);
+            if (item.status === 'rejected') {
+                rows.push(['Thất bại vì', item.reject_reason || 'Chưa có lý do cụ thể', 'fail']);
+                if (item.reviewed_at) rows.push(['Thời gian xử lý', fmtDateTime(item.reviewed_at), '']);
+            }
+            showDetailModal('Chi tiết', rows, item.status === 'rejected' ? 'Bạn có thể sửa lại và nộp lại gmail này.' : '');
+        }
+
+        const REDEEM_STATUS = { pending: 'Đang duyệt', approved: 'Thành công', rejected: 'Thất bại' };
+        let currentRedeems = [];
+        let currentBalance = 0;
+
+        function openRedeemModal(o) {
+            const rows = [
+                ['Mã đơn', o.order_id, 'mono'],
+                ['Trạng thái', REDEEM_STATUS[o.status] || o.status, o.status === 'approved' ? 'good' : o.status === 'rejected' ? 'fail' : ''],
+                ['Loại thẻ', o.voucher_name, ''],
+                ['Mệnh giá', o.tier_label, ''],
+                ['Giá', (o.cost || 0).toLocaleString() + ' Gcoin', ''],
+                ['Thuế', (o.tax || 0).toLocaleString() + ' Gcoin', ''],
+                ['Tổng đã trả', (o.total || 0).toLocaleString() + ' Gcoin', ''],
+                ['Thời gian tạo đơn', fmtDateTime(o.time), '']
+            ];
+            let hint = '';
+            if (o.status === 'approved') {
+                rows.push(['Thời gian duyệt', fmtDateTime(o.reviewed_at), '']);
+            } else if (o.status === 'rejected') {
+                rows.push(['Thất bại vì', o.admin_note || 'Không có lý do cụ thể', 'fail']);
+                rows.push(['Hoàn Gcoin', '+' + (o.total || 0).toLocaleString() + ' Gcoin đã được hoàn lại (gồm cả thuế)', '']);
+                rows.push(['Thời gian xử lý', fmtDateTime(o.reviewed_at), '']);
+            } else {
+                hint = 'Đơn đang chờ admin duyệt. Nếu bị từ chối, Gcoin sẽ được hoàn lại.';
+            }
+            showDetailModal('Chi tiết đơn đổi', rows, hint);
+            if (o.status === 'approved') appendReveal(o);
+        }
+
+        function appendReveal(o) {
+            const body = document.getElementById('modalBody');
+            const row = document.createElement('div');
+            row.className = 'detail-row';
+            const k = document.createElement('div'); k.className = 'detail-k'; k.textContent = 'Thông tin từ admin';
+            row.appendChild(k);
+
+            if (!o.has_note) {
+                const v = document.createElement('div'); v.className = 'detail-v'; v.textContent = '—';
+                row.appendChild(v); body.appendChild(row);
+                return;
+            }
+
+            const box = document.createElement('div'); box.className = 'reveal-box';
+            const lock = document.createElement('div'); lock.className = 'detail-v';
+            lock.textContent = 'Đã ẩn để bảo mật. Nhập lại mật khẩu đăng nhập để xem';
+            const fg = document.createElement('div'); fg.className = 'form-group';
+            const input = document.createElement('input');
+            input.type = 'password'; input.placeholder = 'Mật khẩu tài khoản'; input.maxLength = 128;
+            input.autocomplete = 'current-password';
+            fg.appendChild(input);
+            const btn = document.createElement('button');
+            btn.type = 'button'; btn.className = 'btn'; btn.textContent = 'Xem thông tin';
+            const msg = document.createElement('div'); msg.className = 'form-msg';
+            box.appendChild(lock); box.appendChild(fg); box.appendChild(btn); box.appendChild(msg);
+            row.appendChild(box); body.appendChild(row);
+
+            const go = async () => {
+                const pw = input.value;
+                if (!pw) { setMsg(msg, 'Vui lòng nhập mật khẩu.', 'err'); return; }
+                btn.disabled = true; setMsg(msg, 'Đang xác thực...', '');
+                const data = await api('/api/redeem-detail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order_id: o.order_id, password: pw })
+                });
+                input.value = '';
+                btn.disabled = false;
+                if (data.success) {
+                    box.innerHTML = '';
+                    const v = document.createElement('div');
+                    v.className = 'detail-v mono'; v.textContent = data.admin_note || '—';
+                    const n = document.createElement('div');
+                    n.className = 'detail-k'; n.style.marginTop = '8px';
+                    n.textContent = 'Thông tin sẽ ẩn lại khi bạn đóng cửa sổ này.';
+                    box.appendChild(v); box.appendChild(n);
+                } else if (currentUser) {
+                    setMsg(msg, data.message || 'Không xem được thông tin.', 'err');
+                }
+            };
+            btn.addEventListener('click', go);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+        }
+
+        let walletVouchers = [], walletTiers = [];
+        let selVoucher = null, selTier = null;
+
+        function makeSelect(placeholder, options, selected) {
+            const wrap = document.createElement('div');
+            wrap.className = 'form-group';
+            const sel = document.createElement('select');
+            const ph = document.createElement('option');
+            ph.value = ''; ph.textContent = placeholder;
+            sel.appendChild(ph);
+            options.forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o.value; opt.textContent = o.text; opt.disabled = !!o.disabled;
+                sel.appendChild(opt);
+            });
+            sel.value = selected || '';
+            wrap.appendChild(sel);
+            return { wrap, sel };
+        }
+
+        function renderRedeemPicker() {
+            const box = document.getElementById('voucherList');
+            box.innerHTML = '';
+            if (!walletVouchers.length || !walletTiers.length) {
+                const d = document.createElement('div');
+                d.className = 'empty-note'; d.textContent = 'Hiện chưa có thẻ nào để đổi.';
+                box.appendChild(d);
+                return;
+            }
+            if (!walletVouchers.some(v => v.id === selVoucher)) selVoucher = null;
+            const tierSel = walletTiers.find(t => t.id === selTier);
+            if (!tierSel || currentBalance < tierSel.cost + (tierSel.tax || 0)) selTier = null;
+
+            const v = makeSelect('Chọn loại thẻ', walletVouchers.map(x => ({ value: x.id, text: x.name })), selVoucher);
+            const t = makeSelect('Chọn mệnh giá', walletTiers.map(x => ({
+                value: x.id,
+                text: x.label + ' - ' + x.cost.toLocaleString() + ' Gcoin' + (currentBalance < x.cost + (x.tax || 0) ? ' (không đủ Gcoin)' : ''),
+                disabled: currentBalance < x.cost + (x.tax || 0)
+            })), selTier);
+            box.appendChild(v.wrap);
+            box.appendChild(t.wrap);
+
+            const invoice = document.createElement('div');
+            const go = document.createElement('button');
+            go.type = 'button'; go.className = 'btn'; go.style.backgroundColor = 'var(--accent-green)';
+            go.textContent = 'Thanh toán';
+            const refresh = () => { go.disabled = !(selVoucher && selTier); renderInvoice(invoice); };
+            v.sel.addEventListener('change', () => { selVoucher = v.sel.value || null; refresh(); });
+            t.sel.addEventListener('change', () => { selTier = t.sel.value || null; refresh(); });
+            go.addEventListener('click', () => {
+                const vo = walletVouchers.find(x => x.id === selVoucher);
+                const ti = walletTiers.find(x => x.id === selTier);
+                if (vo && ti) redeem(vo, ti, go);
+            });
+            refresh();
+            box.appendChild(invoice);
+            box.appendChild(go);
+        }
+
+        function renderInvoice(el) {
+            const vo = walletVouchers.find(x => x.id === selVoucher);
+            const ti = walletTiers.find(x => x.id === selTier);
+            el.innerHTML = '';
+            el.className = '';
+            if (!vo || !ti) return;
+            const tax = ti.tax || 0, total = ti.cost + tax, after = currentBalance - total;
+            el.className = 'invoice';
+            const rows = [
+                ['Loại thẻ', escapeHtml(vo.name) + ' - ' + escapeHtml(ti.label), ''],
+                ['Giá trị', ti.cost.toLocaleString() + ' Gcoin', ''],
+                ['Thuế', tax.toLocaleString() + ' Gcoin', ''],
+                ['Tổng phải trả', total.toLocaleString() + ' Gcoin', 'total'],
+                ['Số dư sau khi đổi', after.toLocaleString() + ' Gcoin', after < 0 ? 'short' : '']
+            ];
+            el.innerHTML = '<div class="invoice-title">Hoá đơn</div>' +
+                rows.map(r => `<div class="invoice-row ${r[2]}"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+        }
+
+        function renderWallet(vouchers, tiers, redeems, balance) {
+            currentBalance = balance || 0;
+            walletVouchers = vouchers;
+            walletTiers = tiers;
+            renderRedeemPicker();
+
+            const tbody = document.getElementById('redeemListTable');
+            const list = redeems.slice().sort((a, b) => (b.time || 0) - (a.time || 0));
+            currentRedeems = list;
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chưa có đơn nào</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map((o, idx) => {
+                const cls = Object.prototype.hasOwnProperty.call(REDEEM_STATUS, o.status) ? o.status : 'pending';
+                return `
+                    <tr data-idx="${idx}">
+                        <td>${escapeHtml(o.order_id)}</td>
+                        <td class="cell-data">${escapeHtml(o.voucher_name)} - ${escapeHtml(o.tier_label)}</td>
+                        <td>${escapeHtml((o.total || 0).toLocaleString())}</td>
+                        <td><span class="badge ${cls}">${escapeHtml(REDEEM_STATUS[o.status] || o.status)}</span></td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function redeem(voucher, tier, btn) {
+            const msg = document.getElementById('walletMsg');
+            const tax = tier.tax || 0, total = tier.cost + tax;
+            if (!confirm(`XÁC NHẬN THANH TOÁN\n\nLoại thẻ: ${voucher.name} - ${tier.label}\nGiá: ${tier.cost.toLocaleString()} Gcoin\nThuế: ${tax.toLocaleString()} Gcoin\n-----------------\nTổng: ${total.toLocaleString()} Gcoin\n\nBạn chắc chắn muốn thanh toán?`)) return;
+            btn.disabled = true;
+            setMsg(msg, 'Đang tạo đơn...', '');
+            const data = await api('/api/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ voucher_id: voucher.id, tier_id: tier.id, expected_total: total })
+            }, () => setMsg(msg, 'Máy chủ đang khởi động, vui lòng đợi thêm chút...', ''));
+            if (data.success) {
+                selTier = null;
+                setMsg(msg, data.message || 'Đã tạo đơn!', 'ok');
+            } else if (currentUser) {
+                setMsg(msg, data.message || 'Đổi thất bại.', 'err');
+            }
+            if (currentUser) loadData();
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('open');
+            document.getElementById('modalBody').innerHTML = '';
+        }
+
+        document.getElementById('taskListTable').addEventListener('click', e => {
+            const tr = e.target.closest('tr[data-idx]');
+            if (tr && currentList[tr.dataset.idx]) openTaskModal(currentList[tr.dataset.idx]);
+        });
+        document.getElementById('redeemListTable').addEventListener('click', e => {
+            const tr = e.target.closest('tr[data-idx]');
+            if (tr && currentRedeems[tr.dataset.idx]) openRedeemModal(currentRedeems[tr.dataset.idx]);
+        });
+        document.getElementById('modalClose').addEventListener('click', closeTaskModal);
+        document.getElementById('taskModal').addEventListener('click', e => { if (e.target.id === 'taskModal') closeTaskModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeTaskModal(); setDrawer(false); } });
+
+        let myRefCode = '';
+
+        function renderInvite(r) {
+            const fmt = n => (n || 0).toLocaleString();
+            if (!r) return;
+            myRefCode = r.code || '';
+            document.getElementById('inviteCode').textContent = myRefCode || '—';
+            document.getElementById('btnCopyCode').disabled = !myRefCode;
+            document.getElementById('btnCopyLink').disabled = !myRefCode;
+            document.getElementById('statInvited').textContent = fmt(r.invited_count);
+            document.getElementById('statEarned').textContent = fmt(r.earned);
+
+            const when = r.bonus_on_signup ? 'ngay khi đăng ký' : 'khi đơn đầu tiên của họ được duyệt';
+            const ex = 2000, exComm = Math.floor(ex * (r.percent || 0) / 100);
+            let rules = 'Bạn bè nhập mã của bạn lúc đăng ký sẽ nhận ' + fmt(r.bonus) + ' Gcoin khởi đầu (' + when + '). ' +
+                'Mỗi đơn của họ được duyệt, bạn nhận thêm ' + (r.percent || 0) + '% Gcoin hoa hồng ' +
+                '(vd đơn ' + fmt(ex) + ' Gcoin: họ nhận ' + fmt(ex) + ', bạn nhận ' + fmt(exComm) + '). ' +
+                'Mỗi người mời tối đa ' + (r.max_invites || 0) + ' bạn. Người được mời không được dùng chung mạng/thiết bị với bạn.';
+            document.getElementById('inviteRules').textContent = rules;
+
+            const st = document.getElementById('inviteStatus');
+            if (r.invited_by) {
+                st.style.display = '';
+                st.textContent = r.bonus_paid
+                    ? 'Bạn đã nhận Gcoin khởi đầu từ lời mời.'
+                    : 'Bạn đăng ký bằng mã mời. Bạn sẽ nhận ' + fmt(r.bonus) + ' Gcoin khởi đầu khi đơn đầu tiên được duyệt.';
+            } else {
+                st.style.display = 'none';
+            }
+
+            const tb = document.getElementById('inviteHistory');
+            const h = r.history || [];
+            tb.innerHTML = h.length ? h.map(e =>
+                `<tr><td>${escapeHtml(fmtDateTime(e.time))}</td><td>${escapeHtml(e.from)}</td><td>+${escapeHtml(fmt(e.amount))}</td></tr>`
+            ).join('') : '<tr><td colspan="3" style="text-align:center;">Chưa có</td></tr>';
+        }
+
+        async function copyText(text) {
+            const msg = document.getElementById('inviteMsg');
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (_) {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch (__) {}
+                document.body.removeChild(ta);
+            }
+            setMsg(msg, 'Đã sao chép!', 'ok');
+        }
+        document.getElementById('btnCopyCode').addEventListener('click', () => { if (myRefCode) copyText(myRefCode); });
+        document.getElementById('btnCopyLink').addEventListener('click', () => {
+            if (myRefCode) copyText(location.origin + location.pathname + '?ref=' + encodeURIComponent(myRefCode));
+        });
+
+        (function prefillRef() {
+            try {
+                const ref = new URLSearchParams(location.search).get('ref');
+                if (ref) {
+                    document.getElementById('signupRef').value = ref.slice(0, 12).toUpperCase();
+                    toggleAuthMode('signup');
+                }
+            } catch (_) {}
+        })();
+
+        function showDashboard() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            document.getElementById('userDisplay').innerText = currentUser.display_name;
+            document.getElementById('userAvatar').innerText = (currentUser.display_name || 'U').charAt(0).toUpperCase();
+            document.getElementById('userEmail').textContent = currentUser.email || '';
+            document.getElementById('setName').textContent = currentUser.display_name || '—';
+            document.getElementById('setEmail').textContent = currentUser.email || '—';
+            loadData();
+            try {
+                if (!localStorage.getItem('guide_seen')) {
+                    localStorage.setItem('guide_seen', '1');
+                    switchTab('tabGuide', document.getElementById('menuGuide'));
+                }
+            } catch (_) {}
+        }
+
+        async function loadData() {
+            const tbody = document.getElementById('taskListTable');
+            const data = await api('/api/user-data');
+
+            if (!data.success) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--accent-red);">${escapeHtml(data.message || 'Không tải được dữ liệu')}</td></tr>`;
+                return;
+            }
+
+            document.getElementById('balanceAmount').innerText = (data.balance || 0).toLocaleString();
+            document.getElementById('topBalance').textContent = (data.balance || 0).toLocaleString();
+            renderWallet(data.vouchers || [], data.tiers || [], data.redeem_list || [], data.balance || 0);
+            renderInvite(data.referral || null);
+
+            const list = (data.gmail_list || []).slice().sort((a, b) => (b.time || 0) - (a.time || 0));
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chưa có dữ liệu</td></tr>';
+                return;
+            }
+
+            currentList = list;
+            tbody.innerHTML = list.map((item, idx) => {
+                const known = Object.prototype.hasOwnProperty.call(STATUS_LABEL, item.status);
+                const cls = known ? item.status : 'pending';
+                const label = known ? STATUS_LABEL[item.status] : item.status;
+                return `
+                    <tr data-idx="${idx}">
+                        <td>${escapeHtml(orderCodeOf(item))}</td>
+                        <td class="cell-data" title="${escapeHtml(item.gmail_address)}">${escapeHtml(item.gmail_address)}</td>
+                        <td>${escapeHtml(item.created_date)}</td>
+                        <td><span class="badge ${cls}">${escapeHtml(label)}</span></td>
+                    </tr>`;
+            }).join('');
+        }
+
+        document.getElementById('pwForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('pwMsg'), btn = document.getElementById('btnChangePw');
+            const o = document.getElementById('pwOld').value, n = document.getElementById('pwNew').value, n2 = document.getElementById('pwNew2').value;
+            if (n.length < 8 || n.length > 128) { setMsg(msg, 'Mật khẩu mới phải từ 8 đến 128 ký tự.', 'err'); return; }
+            if (n !== n2) { setMsg(msg, 'Mật khẩu nhập lại không khớp.', 'err'); return; }
+            if (n === o) { setMsg(msg, 'Mật khẩu mới phải khác mật khẩu hiện tại.', 'err'); return; }
+            btn.disabled = true; setMsg(msg, 'Đang đổi mật khẩu...', '');
+            const data = await api('/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old_password: o, new_password: n })
+            }, () => setMsg(msg, 'Máy chủ đang khởi động, vui lòng đợi thêm chút...', ''));
+            btn.disabled = false;
+            if (data.success) { this.reset(); setMsg(msg, data.message || 'Đã đổi mật khẩu!', 'ok'); }
+            else if (currentUser) setMsg(msg, data.message || 'Đổi mật khẩu thất bại.', 'err');
+        });
+
+        initTurnstile();
+        const taskDateEl = document.getElementById('taskDate');
+        taskDateEl.value = todayStr();
+        taskDateEl.max = todayStr();
+
+        (function restoreSession() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('app_user') || 'null');
+                if (saved && saved.email && saved.token) { currentUser = saved; showDashboard(); }
+            } catch (_) {}
+        })();
+    </script>
+</body>
+</html>
