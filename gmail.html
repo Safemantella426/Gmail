@@ -92,10 +92,9 @@
 
         /* Hướng dẫn */
         .guide-intro { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
-        .guide-steps { list-style: none; counter-reset: step; }
-        .guide-steps li { counter-increment: step; position: relative; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px 12px 50px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
-        .guide-steps li::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-        .guide-steps li b { display: block; font-size: 14px; margin-bottom: 2px; }
+        .guide-steps { list-style: none; }
+        .guide-steps li { position: relative; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; list-style: none; }
+        .guide-steps li b { display: block; font-size: 14px; margin-bottom: 4px; color: var(--text-main); }
         .guide-note { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-yellow); border-radius: 10px; padding: 10px 14px; font-size: 12px; line-height: 1.5; margin: 14px 0; }
         .guide-faq details { border-bottom: 1px solid var(--border); padding: 10px 0; font-size: 13px; }
         .guide-faq summary { cursor: pointer; font-weight: 600; }
@@ -306,33 +305,33 @@
                     <p class="guide-intro">Làm theo các bước dưới đây để hoàn thành công việc, gửi báo cáo, nhận điểm thưởng và đổi thưởng.</p>
 
                     <ul class="guide-steps" style="list-style: none;">
-                        <li>
-                            <b>1. Chuẩn bị tài khoản &amp; Tuân thủ quy định</b>
-                            <ul style="margin-top: 6px; padding-left: 18px; color: var(--text-muted);">
-                                <li>Tên tài khoản Google bắt buộc đặt <strong style="color: var(--text-main);">KHÔNG DẤU</strong> (Ví dụ: <code>Nguyen Van An</code>).</li>
-                                <li>Tài khoản <strong style="color: var(--text-main);">chưa từng qua các dịch vụ khác</strong>.</li>
-                                <li><strong style="color: var(--accent-red);">Không</strong> gắn số điện thoại &amp; <strong style="color: var(--accent-red);">không</strong> thêm email khôi phục.</li>
-                                <li style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
-                                    <span>Mật khẩu bắt buộc đặt là:</span>
+                        <li style="list-style: none;">
+                            <b>Chuẩn bị tài khoản &amp; Tuân thủ quy định</b>
+                            <ul style="margin-top: 6px; padding-left: 18px; color: var(--text-muted); list-style: none;">
+                                <li style="list-style: none;">• Tên tài khoản Google bắt buộc đặt <strong style="color: var(--text-main);">KHÔNG DẤU</strong> (Ví dụ: <code>Nguyen Van An</code>).</li>
+                                <li style="list-style: none;">• Tài khoản <strong style="color: var(--text-main);">chưa từng qua các dịch vụ khác</strong>.</li>
+                                <li style="list-style: none;">• <strong style="color: var(--accent-red);">Không</strong> gắn số điện thoại &amp; <strong style="color: var(--accent-red);">không</strong> thêm email khôi phục.</li>
+                                <li style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; list-style: none;">
+                                    <span>• Mật khẩu bắt buộc đặt là:</span>
                                     <code style="background: var(--bg-body); padding: 3px 8px; border-radius: 6px; color: var(--accent-yellow); border: 1px solid var(--border);">sKibidi67@@</code>
                                     <button type="button" onclick="navigator.clipboard.writeText('sKibidi67@@'); this.textContent='Đã chép!'; setTimeout(()=>this.textContent='Copy', 1500);" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">Copy</button>
                                 </li>
                             </ul>
                         </li>
-                        <li style="margin-top: 8px;">
-                            <b>2. Đăng xuất trước khi gửi</b>
+                        <li style="margin-top: 8px; list-style: none;">
+                            <b>Đăng xuất trước khi gửi</b>
                             <span style="color: var(--text-muted); display: block; margin-top: 4px;"><strong style="color: var(--accent-red);">Bắt buộc ĐĂNG XUẤT</strong> tài khoản Google ra khỏi thiết bị trước khi tiến hành gửi đơn lên hệ thống.</span>
                         </li>
-                        <li style="margin-top: 8px;">
-                            <b>3. Gửi Gmail đi</b>
+                        <li style="margin-top: 8px; list-style: none;">
+                            <b>Gửi Gmail đi</b>
                             <span style="color: var(--text-muted); display: block; margin-top: 4px;">Vào tab <em>Gửi mail</em>, dán gmail vào ô tương ứng, chọn ngày tạo rồi bấm <em>Gửi</em>. Mỗi đơn duyệt thành công nhận thưởng: <strong style="color: var(--accent-green);">+2.000 Gcoin</strong>.</span>
                         </li>
-                        <li style="margin-top: 8px;">
-                            <b>4. Chờ duyệt &amp; Nhận thưởng</b>
+                        <li style="margin-top: 8px; list-style: none;">
+                            <b>Chờ duyệt &amp; Nhận thưởng</b>
                             <span style="color: var(--text-muted); display: block; margin-top: 4px;">Admin sẽ kiểm tra. Trạng thái <em>Chờ duyệt</em> = đang xem xét, <em>Đã duyệt</em> = được cộng Gcoin, <em>Không đạt</em> = bấm vào đơn để xem lý do, sửa lại và nộp lại.</span>
                         </li>
-                        <li style="margin-top: 8px;">
-                            <b>5. Đổi thưởng</b>
+                        <li style="margin-top: 8px; list-style: none;">
+                            <b>Đổi thưởng</b>
                             <span style="color: var(--text-muted); display: block; margin-top: 4px;">Vào tab <em>Ví Điểm Thưởng</em>, chọn loại thẻ và mệnh giá, kiểm tra hoá đơn kỹ rồi bấm thanh toán. Khi đơn thành công, bấm vào đơn và nhập mật khẩu để xem thông tin chi tiết.</span>
                         </li>
                     </ul>
